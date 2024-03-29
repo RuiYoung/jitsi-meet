@@ -187,7 +187,7 @@ export function getConferenceName(stateful: IStateful): string {
     const { callee } = state['features/base/jwt'];
     const { callDisplayName } = state['features/base/config'];
     const { localSubject, pendingSubjectChange, room, subject } = getConferenceState(state);
-    console.table([localSubject, pendingSubjectChange, room, subject])
+    // console.table([localSubject, pendingSubjectChange, room, subject])
     return (pendingSubjectChange
         || localSubject
         || subject

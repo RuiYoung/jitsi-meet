@@ -241,6 +241,10 @@ function getDevServerConfig() {
         host: 'localhost',
         hot: true,
         proxy: {
+            '/auth/meeting': {
+                target: 'http://10.60.0.68:7002',
+                secure: false,
+            },
             '/': {
                 bypass: devServerProxyBypass,
                 secure: false,
@@ -248,7 +252,7 @@ function getDevServerConfig() {
                 headers: {
                     'Host': new URL(devServerProxyTarget).host
                 }
-            }
+            },
         },
         server: process.env.CODESPACES ? 'http' : 'https',
         static: {

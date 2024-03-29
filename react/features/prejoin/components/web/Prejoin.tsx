@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-no-bind */
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { connect, useDispatch } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
@@ -38,7 +38,14 @@ import {
 import { hasDisplayName } from '../../utils';
 
 import JoinByPhoneDialog from './dialogs/JoinByPhoneDialog';
-
+import PsdCheck from './dialogs/PsdCheck'
+import {
+    LOCAL_RECORDING_NOTIFICATION_ID,
+    NOTIFICATION_TIMEOUT_TYPE,
+    NOTIFICATION_TYPE,
+    RAISE_HAND_NOTIFICATION_ID
+} from '../../../notifications/constants';
+import { showNotification } from '../../../notifications/actions';
 interface IProps {
 
     /**
@@ -130,6 +137,8 @@ interface IProps {
      * The JitsiLocalTrack to display.
      */
     videoTrack?: Object;
+
+    room?: String;
 }
 
 const useStyles = makeStyles()(theme => {
@@ -212,7 +221,8 @@ const Prejoin = ({
     showUnsafeRoomWarning,
     unsafeRoomConsent,
     updateSettings: dispatchUpdateSettings,
-    videoTrack
+    videoTrack,
+    room,
 }: IProps) => {
     const showDisplayNameField = useMemo(
         () => isDisplayNameVisible && !readOnlyName,
@@ -224,6 +234,78 @@ const Prejoin = ({
     const { classes } = useStyles();
     const { t } = useTranslation();
     const dispatch = useDispatch();
+    const [password, setPassword] = useState('');
+    useEffect(() => {
+        getMeetingConfigInfo(room)
+    }, [])
+    function getQueryParams() {
+        const queryParams = {};
+        const queryString = window.location.search.substring(1);
+        const pairs = queryString.split('&');
+
+        for (let pair of pairs) {
+            const [key, value] = pair.split('=');
+            queryParams[decodeURIComponent(key)] = decodeURIComponent(value);
+        }
+
+        return queryParams;
+    }
+    const params: any = getQueryParams();
+    /**
+    * 获取链接的会议号，得到会议设置信息
+    */
+    const [showPsdDialog, setShowPsdDialog] = useState(false);
+
+    console.log(params, 'zxvzxccvzxvzx');
+    const getMeetingConfigInfo = async (roomName?: String) => {
+        const queryInfo = {
+            meetId: roomName,
+            userId: params.userId
+        }
+        fetch('auth/meeting/userMeetPreConfig', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(queryInfo)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(res => {
+                if (res.code === 0) {
+                    setName(res.data.nickName)
+                    setPassword(res.data.password)
+                    if (res.data.password) {
+                        // 校验入会密码
+                        setShowPsdDialog(true)
+                    } else {
+                        // 没有入会密码，直接入会
+                        onJoinButtonClick()
+                    }
+
+                } else {
+                    dispatch(showNotification({
+                        appearance: NOTIFICATION_TYPE.ERROR,
+                        titleKey: '123343',
+                        title: '警告',
+                        descriptionKey: res.msg,
+                        uid: LOCAL_RECORDING_NOTIFICATION_ID
+                    }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with your fetch operation:', error);
+            });
+    }
+    const handlePsd = (isCorrect: Boolean) => {
+        if (isCorrect) {
+            onJoinButtonClick()
+        }
+    }
 
     /**
      * Handler for the join button.
@@ -455,6 +537,10 @@ const Prejoin = ({
                     joinConferenceWithoutAudio={joinConferenceWithoutAudio}
                     onClose={closeDialog} />
             )}
+
+            {showPsdDialog && (
+                <PsdCheck confirmPsd={handlePsd} correctPassword={password} />
+            )}
         </PreMeetingScreen>
     );
 };
@@ -488,7 +574,8 @@ function mapStateToProps(state: IReduxState) {
         showErrorOnJoin,
         showUnsafeRoomWarning: isInsecureRoomName(room) && isUnsafeRoomWarningEnabled(state),
         unsafeRoomConsent,
-        videoTrack: getLocalJitsiVideoTrack(state)
+        videoTrack: getLocalJitsiVideoTrack(state),
+        room,
     };
 }
 

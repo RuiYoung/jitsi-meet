@@ -193,7 +193,7 @@ export function _connectInternal(id?: string, password?: string) {
         const options = constructOptions(state);
         const { locationURL } = state['features/base/connection'];
         const { jwt } = state['features/base/jwt'];
-        debugger;
+        // debugger;
         const connection = new JitsiMeetJS.JitsiConnection(options.appId, jwt, options);
 
         connection[JITSI_CONNECTION_URL_KEY] = locationURL;

@@ -181,22 +181,22 @@ const PreMeetingScreen = ({
     } : {};
 
     return (
-        <div className = { clsx('premeeting-screen', classes.container, className) }>
-            <div style = { style }>
-                <div className = { classes.content }>
+        <div className={clsx('premeeting-screen', classes.container, className)}>
+            <div style={style}>
+                <div className={classes.content}>
                     <ConnectionStatus />
 
-                    <div className = { classes.contentControls }>
-                        <h1 className = { classes.title }>
+                    <div className={classes.contentControls}>
+                        <h1 className={classes.title}>
                             {title}
                         </h1>
-                        {_roomName && (
-                            <span className = { classes.roomName }>
+                        {/* {_roomName && (
+                            <span className={classes.roomName}>
                                 {_roomName}
                             </span>
-                        )}
+                        )} */}
                         {children}
-                        {_buttons.length && <Toolbox toolbarButtons = { _buttons } />}
+                        {_buttons.length && <Toolbox toolbarButtons={_buttons} />}
                         {skipPrejoinButton}
                         {showUnsafeRoomWarning && <UnsafeRoomWarning />}
                         {showDeviceStatus && <DeviceStatus />}
@@ -204,8 +204,8 @@ const PreMeetingScreen = ({
                 </div>
             </div>
             <Preview
-                videoMuted = { videoMuted }
-                videoTrack = { videoTrack } />
+                videoMuted={videoMuted}
+                videoTrack={videoTrack} />
         </div>
     );
 };
