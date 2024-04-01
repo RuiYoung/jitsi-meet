@@ -255,8 +255,10 @@ const Prejoin = ({
     * 获取链接的会议号，得到会议设置信息
     */
     const [showPsdDialog, setShowPsdDialog] = useState(false);
-
-    console.log(params, 'zxvzxccvzxvzx');
+    /**
+     * 获取会议配置信息
+     * @param roomName 
+     */
     const getMeetingConfigInfo = async (roomName?: String) => {
         const queryInfo = {
             meetId: roomName,
@@ -277,17 +279,28 @@ const Prejoin = ({
             })
             .then(res => {
                 if (res.code === 0) {
-                    setName(res.data.nickName)
-                    setPassword(res.data.password)
-                    if (res.data.password) {
-                        // 校验入会密码
-                        setShowPsdDialog(true)
+                    if (res.data.isModerator === 0 && res.data.hostJoinedMeetingBeforeEnable === 1) {
+                        // 非主持人且设置为需主持人先入会的情况下，默认等待提示，暂不入会
+                        dispatch(showNotification({
+                            appearance: NOTIFICATION_TYPE.ERROR,
+                            titleKey: '123343',
+                            title: '警告',
+                            descriptionKey: '主持人未入会，请稍后重试',
+                            uid: LOCAL_RECORDING_NOTIFICATION_ID
+                        }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
                     } else {
-                        // 没有入会密码，直接入会
-                        onJoinButtonClick()
+                        setPassword(res.data.password)
+                        if (res.data.password) {
+                            // 校验入会密码
+                            setShowPsdDialog(true)
+                        } else {
+                            // 没有入会密码，直接入会
+                            onJoinButtonClick()
+                        }
                     }
-
+                    setName(res.data.nickName)
                 } else {
+                    setName('')
                     dispatch(showNotification({
                         appearance: NOTIFICATION_TYPE.ERROR,
                         titleKey: '123343',
@@ -301,10 +314,19 @@ const Prejoin = ({
                 console.error('There was a problem with your fetch operation:', error);
             });
     }
+    /**
+     * 加入会议
+     */
+    const reJoinMeeting = () => {
+        getMeetingConfigInfo(room)
+    }
     const handlePsd = (isCorrect: Boolean) => {
         if (isCorrect) {
             onJoinButtonClick()
         }
+    }
+    const cancalPsd = () => {
+        setShowPsdDialog(false)
     }
 
     /**
@@ -469,7 +491,7 @@ const Prejoin = ({
             <div
                 className={classes.inputContainer}
                 data-testid='prejoin.screen'>
-                {showDisplayNameField ? (<Input
+                {!showDisplayNameField ? (<Input
                     accessibilityLabel={t('dialog.enterDisplayName')}
                     autoComplete={'name'}
                     autoFocus={true}
@@ -521,7 +543,7 @@ const Prejoin = ({
                                 || (showUnsafeRoomWarning && !unsafeRoomConsent)
                                 || showErrorOnField}
                             hasOptions={hasExtraJoinButtons}
-                            onClick={onJoinButtonClick}
+                            onClick={reJoinMeeting}
                             onOptionsClick={onOptionsClick}
                             role='button'
                             tabIndex={0}
@@ -539,7 +561,7 @@ const Prejoin = ({
             )}
 
             {showPsdDialog && (
-                <PsdCheck confirmPsd={handlePsd} correctPassword={password} />
+                <PsdCheck confirmPsd={handlePsd} cancelPsd={cancalPsd} correctPassword={password} />
             )}
         </PreMeetingScreen>
     );

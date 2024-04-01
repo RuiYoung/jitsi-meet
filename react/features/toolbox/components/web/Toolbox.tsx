@@ -287,6 +287,7 @@ const Toolbox = ({
      */
     function getVisibleButtons() {
         const buttons = getAllToolboxButtons(_customToolbarButtons);
+        console.log(buttons, 'buttons')
 
         setButtonsNotifyClickMode(buttons);
         const isHangupVisible = isToolbarButtonEnabled('hangup', _toolbarButtons);

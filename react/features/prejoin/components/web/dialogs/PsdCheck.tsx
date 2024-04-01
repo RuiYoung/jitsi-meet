@@ -32,6 +32,7 @@ const useStyles = makeStyles()(theme => {
 });
 const PsdCheck = ({
     confirmPsd,
+    cancelPsd,
     correctPassword,
 }) => {
     const inputRef = useRef<HTMLInputElement>(null);
@@ -54,7 +55,6 @@ const PsdCheck = ({
         setPassword(event.target.value);
     };
     const handleSubmit = () => {
-        console.log(password, 'password222', correctPassword)
         if (correctPassword === password) {
             confirmPsd(true)
             return;
@@ -72,6 +72,7 @@ const PsdCheck = ({
             cancel={{ hidden: true }}
             ok={{ hidden: false, translationKey: '确认' }}
             onSubmit={handleSubmit}
+            onCancel={cancelPsd}
             titleKey='lobby.enterPasswordTitle'>
             <div className={classes.container}>
                 <input
