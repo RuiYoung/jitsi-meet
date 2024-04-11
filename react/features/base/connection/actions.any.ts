@@ -63,7 +63,7 @@ export function connectionDisconnected(connection?: Object) {
  * }}
  */
 export function connectionEstablished(
-        connection: Object, timeEstablished: number) {
+    connection: Object, timeEstablished: number) {
     return {
         type: CONNECTION_ESTABLISHED,
         connection,
@@ -85,8 +85,8 @@ export function connectionEstablished(
  * }}
  */
 export function connectionFailed(
-        connection: Object,
-        error: ConnectionFailedError) {
+    connection: Object,
+    error: ConnectionFailedError) {
     const { credentials } = error;
 
     if (credentials && !Object.keys(credentials).length) {
@@ -147,6 +147,10 @@ export function constructOptions(state: IReduxState) {
         const roomName = getBackendSafeRoomName(room);
 
         options.serviceUrl = appendURLParam(serviceUrl, 'room', roomName ?? '');
+        const userId = state['features/base/settings'].userId;
+        if (userId) {
+            options.serviceUrl = appendURLParam(options.serviceUrl, 'userId', userId ?? '');
+        }
 
         if (options.websocketKeepAliveUrl) {
             options.websocketKeepAliveUrl = appendURLParam(options.websocketKeepAliveUrl, 'room', roomName ?? '');
@@ -253,10 +257,10 @@ export function _connectInternal(id?: string, password?: string) {
              * @returns {void}
              */
             function _onConnectionFailed( // eslint-disable-line max-params
-                    err: string,
-                    message: string,
-                    credentials: any,
-                    details: Object) {
+                err: string,
+                message: string,
+                credentials: any,
+                details: Object) {
                 unsubscribe();
 
                 dispatch(connectionFailed(connection, {
@@ -352,18 +356,18 @@ export function disconnect() {
 
             promise
                 = conference_.leave()
-                .catch((error: Error) => {
-                    logger.warn(
-                        'JitsiConference.leave() rejected with:',
-                        error);
+                    .catch((error: Error) => {
+                        logger.warn(
+                            'JitsiConference.leave() rejected with:',
+                            error);
 
-                    // The library lib-jitsi-meet failed to make the
-                    // JitsiConference leave. Which may be because
-                    // JitsiConference thinks it has already left.
-                    // Regardless of the failure reason, continue in
-                    // jitsi-meet as if the leave has succeeded.
-                    dispatch(conferenceLeft(conference_));
-                });
+                        // The library lib-jitsi-meet failed to make the
+                        // JitsiConference leave. Which may be because
+                        // JitsiConference thinks it has already left.
+                        // Regardless of the failure reason, continue in
+                        // jitsi-meet as if the leave has succeeded.
+                        dispatch(conferenceLeft(conference_));
+                    });
         } else {
             promise = Promise.resolve();
         }

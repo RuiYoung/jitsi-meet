@@ -48,7 +48,9 @@ const DEFAULT_STATE: ISettingsState = {
         'notify.chatMessages': true
     },
     userSelectedMicDeviceLabel: undefined,
-    userSelectedSkipPrejoin: undefined
+    userSelectedSkipPrejoin: undefined,
+    meetTopic: undefined,
+    userId: undefined,
 };
 
 export interface ISettingsState {
@@ -89,6 +91,8 @@ export interface ISettingsState {
     userSelectedSkipPrejoin?: boolean;
     videoSettingsVisible?: boolean;
     visible?: boolean;
+    meetTopic?: string;
+    userId?: string;
 }
 
 const STORE_NAME = 'features/base/settings';
@@ -117,14 +121,14 @@ PersistenceRegistry.register(STORE_NAME, filterSubtree, DEFAULT_STATE);
 
 ReducerRegistry.register<ISettingsState>(STORE_NAME, (state = DEFAULT_STATE, action): ISettingsState => {
     switch (action.type) {
-    case APP_WILL_MOUNT:
-        return _initSettings(state);
+        case APP_WILL_MOUNT:
+            return _initSettings(state);
 
-    case SETTINGS_UPDATED:
-        return {
-            ...state,
-            ...action.settings
-        };
+        case SETTINGS_UPDATED:
+            return {
+                ...state,
+                ...action.settings
+            };
     }
 
     return state;

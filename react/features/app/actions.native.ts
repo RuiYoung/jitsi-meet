@@ -78,6 +78,7 @@ export function appNavigate(uri?: string, options: IReloadNowOptions = {}) {
         const { contextRoot, host, hostname, pathname, room } = location;
         const locationURL = new URL(location.toString());
         const { conference } = getConferenceState(getState());
+        const userId = getState()['features/base/settings'].userId;
 
         if (room) {
             if (conference) {
@@ -111,6 +112,7 @@ export function appNavigate(uri?: string, options: IReloadNowOptions = {}) {
 
         // XXX In order to support multiple shards, tell the room to the deployment.
         room && (url = appendURLParam(url, 'room', getBackendSafeRoomName(room) ?? ''));
+        userId && (url = appendURLParam(url, 'userId', userId ?? ''))
 
         const { release } = parseURLParams(location, true, 'search');
 

@@ -8,11 +8,23 @@ import { MEDIA_TYPE } from '../../../base/media/constants';
 import { getLocalTrack, getTrackState } from '../../../base/tracks/functions';
 import { inIframe } from '../../../base/util/iframeUtils';
 import { stopLocalVideoRecording } from '../../actions.any';
-
+import { useDispatch, useSelector} from 'react-redux';
+import { getConferenceName } from '../../../base/conference/functions';
+import {
+    LOCAL_RECORDING_NOTIFICATION_ID,
+    NOTIFICATION_TIMEOUT_TYPE,
+    NOTIFICATION_TYPE,
+    RAISE_HAND_NOTIFICATION_ID
+} from '../../../notifications/constants';
+import {
+    showNotification,
+} from '../../../notifications/actions';
 interface ISelfRecording {
     on: boolean;
     withVideo: boolean;
 }
+
+// const dispatch = useDispatch();
 
 interface ILocalRecordingManager {
     addAudioTrackToLocalRecording: (track: MediaStreamTrack) => void;
@@ -26,6 +38,7 @@ interface ILocalRecordingManager {
     recorder: MediaRecorder | undefined;
     recordingData: Blob[];
     roomName: string;
+    uploadRecordFile: (blob: Blob) => void;
     saveRecording: (recordingData: Blob[], filename: string) => void;
     selfRecording: ISelfRecording;
     startLocalRecording: (store: IStore, onlySelf: boolean) => void;
@@ -113,7 +126,7 @@ const LocalRecordingManager: ILocalRecordingManager = {
             return;
         }
         if (track) {
-            const stream = new MediaStream([ track ]);
+            const stream = new MediaStream([track]);
 
             this.mixAudioStream(stream);
         }
@@ -130,7 +143,40 @@ const LocalRecordingManager: ILocalRecordingManager = {
 
         return `${this.roomName}_${timestamp}`;
     },
+    /**
+     * 上传录制文件
+     */
+    uploadRecordFile(file: Blob) {
+        const formData = new FormData();
+        formData.append('MeetingId', useSelector(getConferenceName));
+        formData.append('ImageFiles', file);
+        fetch('/cs/web/recordFile/upload/files/single', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            },
+            body: formData
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(res => {
+                if (res.code === 0) {
 
+                } else {
+                    // dispatch(showNotification({
+                    //     appearance: NOTIFICATION_TYPE.ERROR,
+                    //     titleKey: '1233434544',
+                    //     title: '',
+                    //     descriptionKey: res.msg,
+                    //     uid: LOCAL_RECORDING_NOTIFICATION_ID
+                    // }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+                }
+            })
+    },
     /**
      * Saves local recording to file.
      *
@@ -141,15 +187,16 @@ const LocalRecordingManager: ILocalRecordingManager = {
     async saveRecording(recordingData, filename) {
         // @ts-ignore
         const blob = await fixWebmDuration(new Blob(recordingData, { type: this.mediaType }));
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        this.uploadRecordFile(blob)
+        // const url = URL.createObjectURL(blob);
+        // const a = document.createElement('a');
 
-        const extension = this.mediaType.slice(this.mediaType.indexOf('/') + 1, this.mediaType.indexOf(';'));
+        // const extension = this.mediaType.slice(this.mediaType.indexOf('/') + 1, this.mediaType.indexOf(';'));
 
-        a.style.display = 'none';
-        a.href = url;
-        a.download = `${filename}.${extension}`;
-        a.click();
+        // a.style.display = 'none';
+        // a.href = url;
+        // a.download = `${filename}.${extension}`;
+        // a.click();
     },
 
     /**
@@ -217,7 +264,7 @@ const LocalRecordingManager: ILocalRecordingManager = {
                 // @ts-ignore
                 navigator.mediaDevices.setCaptureHandleConfig({
                     handle: `JitsiMeet-${tabId}`,
-                    permittedOrigins: [ '*' ]
+                    permittedOrigins: ['*']
                 });
             }
             const localAudioTrack = getLocalTrack(tracks, MEDIA_TYPE.AUDIO)?.jitsiTrack?.track;
@@ -243,8 +290,10 @@ const LocalRecordingManager: ILocalRecordingManager = {
 
             // @ts-ignore
             gdmStream = await navigator.mediaDevices.getDisplayMedia({
-                video: { displaySurface: 'browser',
-                    frameRate: 30 },
+                video: {
+                    displaySurface: 'browser',
+                    frameRate: 30
+                },
                 audio: false, // @ts-ignore
                 preferCurrentTab: true
             });

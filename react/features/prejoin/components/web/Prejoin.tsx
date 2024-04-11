@@ -36,6 +36,7 @@ import {
     isPrejoinDisplayNameVisible
 } from '../../functions';
 import { hasDisplayName } from '../../utils';
+// import { updateSettings } from '../../../base/settings/actions';
 
 import JoinByPhoneDialog from './dialogs/JoinByPhoneDialog';
 import PsdCheck from './dialogs/PsdCheck'
@@ -238,8 +239,11 @@ const Prejoin = ({
     useEffect(() => {
         getMeetingConfigInfo(room)
     }, [])
+    interface Iparams {
+        userId?: string;
+    }
     function getQueryParams() {
-        const queryParams = {};
+        const queryParams: any = {};
         const queryString = window.location.search.substring(1);
         const pairs = queryString.split('&');
 
@@ -250,14 +254,15 @@ const Prejoin = ({
 
         return queryParams;
     }
-    const params: any = getQueryParams();
+
+    const params: Iparams = getQueryParams();
     /**
     * 获取链接的会议号，得到会议设置信息
     */
     const [showPsdDialog, setShowPsdDialog] = useState(false);
     /**
      * 获取会议配置信息
-     * @param roomName 
+     * @param roomName
      */
     const getMeetingConfigInfo = async (roomName?: String) => {
         const queryInfo = {
@@ -279,6 +284,12 @@ const Prejoin = ({
             })
             .then(res => {
                 if (res.code === 0) {
+                    dispatchUpdateSettings({
+                        meetTopic: res.data.meetTopic,
+                        startWithAudioMuted: res.data.isMutedAudio,
+                        startWithVideoMuted: res.data.isMutedVideo,
+                        userId: params.userId,
+                    })
                     if (res.data.isModerator === 0 && res.data.hostJoinedMeetingBeforeEnable === 1) {
                         // 非主持人且设置为需主持人先入会的情况下，默认等待提示，暂不入会
                         dispatch(showNotification({
@@ -321,6 +332,7 @@ const Prejoin = ({
         getMeetingConfigInfo(room)
     }
     const handlePsd = (isCorrect: Boolean) => {
+        console.log(isCorrect, 'isCorrect----')
         if (isCorrect) {
             onJoinButtonClick()
         }

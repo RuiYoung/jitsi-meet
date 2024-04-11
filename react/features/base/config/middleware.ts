@@ -50,6 +50,7 @@ function _setConfig({ dispatch, getState }: IStore, next: Function, action: AnyA
 
     // Update the config with user defined settings.
     const settings = state['features/base/settings'];
+    console.log(settings, 'settings-----')
     const config: IConfig = {};
 
     if (typeof settings.disableP2P !== 'undefined') {

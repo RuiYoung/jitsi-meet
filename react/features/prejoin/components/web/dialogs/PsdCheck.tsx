@@ -30,11 +30,16 @@ const useStyles = makeStyles()(theme => {
         }
     };
 });
+interface IProps {
+    confirmPsd: (isCorrect: Boolean) => void;
+    cancelPsd: () => void;
+    correctPassword?: string
+}
 const PsdCheck = ({
     confirmPsd,
     cancelPsd,
     correctPassword,
-}) => {
+}:IProps) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const [password, setPassword] = useState('');
     const { classes } = useStyles();
@@ -47,7 +52,7 @@ const PsdCheck = ({
         if (e.key === ' ' || e.key === 'Enter') {
             // e.preventDefault();
             // props.onSubmit();
-            setPassword('sdfdsf')
+            // setPassword(e.target.value)
         }
     };
     // 输入框内容变化时调用的函数

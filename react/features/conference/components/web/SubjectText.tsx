@@ -3,7 +3,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
 
-import { getConferenceName } from '../../../base/conference/functions';
+// import { getConferenceName } from '../../../base/conference/functions';
 import { withPixelLineHeight } from '../../../base/styles/functions.web';
 import Tooltip from '../../../base/tooltip/components/Tooltip';
 
@@ -38,18 +38,20 @@ const useStyles = makeStyles()(theme => {
  * @returns {ReactElement}
  */
 const SubjectText = () => {
-    const subject = useSelector(getConferenceName);
+    // const subject = useSelector(getConferenceName);
+    const meetTopic = useSelector(state => state['features/base/settings']).meetTopic
     const { classes } = useStyles();
 
     return (
         <Tooltip
-            content = { subject }
-            position = 'bottom'>
-            <div className = { classes.container }>
-                <div className = { clsx('subject-text--content', classes.content) }>{subject}</div>
+            content={meetTopic}
+            position='bottom'>
+            <div className={classes.container}>
+                <div className={clsx('subject-text--content', classes.content)}>{meetTopic}</div>
             </div>
         </Tooltip>
     );
 };
+
 
 export default SubjectText;
