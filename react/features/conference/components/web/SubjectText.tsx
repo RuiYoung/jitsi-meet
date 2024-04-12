@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
 
 // import { getConferenceName } from '../../../base/conference/functions';
+import { getMeetTopic } from '../../../base/conference/functions';
 import { withPixelLineHeight } from '../../../base/styles/functions.web';
 import Tooltip from '../../../base/tooltip/components/Tooltip';
 
@@ -39,7 +40,8 @@ const useStyles = makeStyles()(theme => {
  */
 const SubjectText = () => {
     // const subject = useSelector(getConferenceName);
-    const meetTopic = useSelector(state => state['features/base/settings']).meetTopic
+    // const meetTopic = useSelector(state => state['features/base/settings']).meetTopic
+    const meetTopic = useSelector(getMeetTopic);
     const { classes } = useStyles();
 
     return (

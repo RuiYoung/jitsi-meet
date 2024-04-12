@@ -287,7 +287,7 @@ const Toolbox = ({
      */
     function getVisibleButtons() {
         const buttons = getAllToolboxButtons(_customToolbarButtons);
-        console.log(buttons, 'buttons')
+        // console.log(buttons, 'buttons')
 
         setButtonsNotifyClickMode(buttons);
         const isHangupVisible = isToolbarButtonEnabled('hangup', _toolbarButtons);
@@ -362,7 +362,7 @@ const Toolbox = ({
         const containerClassName = `toolbox-content${_isMobile || _isNarrowLayout ? ' toolbox-content-mobile' : ''}`;
 
         const { mainMenuButtons, overflowMenuButtons } = getVisibleButtons();
-        console.log(mainMenuButtons, 'mainMenuButtons=======')
+        // console.log(mainMenuButtons, 'mainMenuButtons=======')
         const raiseHandInOverflowMenu = overflowMenuButtons.some(({ key }) => key === 'raisehand');
         const showReactionsInOverflowMenu
             = (_reactionsEnabled && !_reactionsButtonEnabled

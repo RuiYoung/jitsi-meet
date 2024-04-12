@@ -147,9 +147,9 @@ export function constructOptions(state: IReduxState) {
         const roomName = getBackendSafeRoomName(room);
 
         options.serviceUrl = appendURLParam(serviceUrl, 'room', roomName ?? '');
-        const userId = state['features/base/settings'].userId;
-        if (userId) {
-            options.serviceUrl = appendURLParam(options.serviceUrl, 'userId', userId ?? '');
+        const token = state['features/base/settings'].token;
+        if (token) {
+            options.serviceUrl = appendURLParam(options.serviceUrl, 'token', token ?? '');
         }
 
         if (options.websocketKeepAliveUrl) {

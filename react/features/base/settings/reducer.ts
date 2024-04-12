@@ -51,6 +51,7 @@ const DEFAULT_STATE: ISettingsState = {
     userSelectedSkipPrejoin: undefined,
     meetTopic: undefined,
     userId: undefined,
+    token: undefined,
 };
 
 export interface ISettingsState {
@@ -93,6 +94,7 @@ export interface ISettingsState {
     visible?: boolean;
     meetTopic?: string;
     userId?: string;
+    token?: string;
 }
 
 const STORE_NAME = 'features/base/settings';

@@ -8,7 +8,7 @@ import { MEDIA_TYPE } from '../../../base/media/constants';
 import { getLocalTrack, getTrackState } from '../../../base/tracks/functions';
 import { inIframe } from '../../../base/util/iframeUtils';
 import { stopLocalVideoRecording } from '../../actions.any';
-import { useDispatch, useSelector} from 'react-redux';
+// import { useDispatch, useSelector } from 'react-redux';
 import { getConferenceName } from '../../../base/conference/functions';
 import {
     LOCAL_RECORDING_NOTIFICATION_ID,
@@ -81,6 +81,7 @@ const LocalRecordingManager: ILocalRecordingManager = {
         on: false,
         withVideo: false
     },
+    
 
     get mediaType() {
         if (this.selfRecording.on && !this.selfRecording.withVideo) {
@@ -147,9 +148,10 @@ const LocalRecordingManager: ILocalRecordingManager = {
      * 上传录制文件
      */
     uploadRecordFile(file: Blob) {
-        const formData = new FormData();
-        formData.append('MeetingId', useSelector(getConferenceName));
+        let formData = new FormData();
+        formData.append('MeetingId', this.roomName);
         formData.append('ImageFiles', file);
+        console.log('sdfasdfsdfsdaf========', formData)
         fetch('/cs/web/recordFile/upload/files/single', {
             method: 'POST',
             headers: {

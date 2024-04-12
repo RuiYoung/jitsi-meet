@@ -241,6 +241,7 @@ const Prejoin = ({
     }, [])
     interface Iparams {
         userId?: string;
+        token?: string;
     }
     function getQueryParams() {
         const queryParams: any = {};
@@ -289,6 +290,7 @@ const Prejoin = ({
                         startWithAudioMuted: res.data.isMutedAudio,
                         startWithVideoMuted: res.data.isMutedVideo,
                         userId: params.userId,
+                        token: params.token,
                     })
                     if (res.data.isModerator === 0 && res.data.hostJoinedMeetingBeforeEnable === 1) {
                         // 非主持人且设置为需主持人先入会的情况下，默认等待提示，暂不入会

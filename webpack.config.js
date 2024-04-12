@@ -245,6 +245,10 @@ function getDevServerConfig() {
                 target: 'http://10.60.0.68:7002',
                 secure: false,
             },
+            '/cs/web/': {
+                target: 'http://10.60.0.67:8002',
+                secure: false,
+            },
             '/': {
                 bypass: devServerProxyBypass,
                 secure: false,
