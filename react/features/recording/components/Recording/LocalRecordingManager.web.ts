@@ -45,6 +45,7 @@ interface ILocalRecordingManager {
     stopLocalRecording: () => void;
     stream: MediaStream | undefined;
     totalSize: number;
+    token: string;
 }
 
 const getMimeType = (): string => {
@@ -76,12 +77,13 @@ const LocalRecordingManager: ILocalRecordingManager = {
     audioContext: undefined,
     audioDestination: undefined,
     roomName: '',
+    token: '',
     totalSize: MAX_SIZE,
     selfRecording: {
         on: false,
         withVideo: false
     },
-    
+
 
     get mediaType() {
         if (this.selfRecording.on && !this.selfRecording.withVideo) {
@@ -150,12 +152,12 @@ const LocalRecordingManager: ILocalRecordingManager = {
     uploadRecordFile(file: Blob) {
         let formData = new FormData();
         formData.append('MeetingId', this.roomName);
-        formData.append('ImageFiles', file);
-        console.log('sdfasdfsdfsdaf========', formData)
+        formData.append('ImageFile', file);
         fetch('/cs/web/recordFile/upload/files/single', {
             method: 'POST',
             headers: {
-                'Content-Type': 'multipart/form-data'
+                // 'Content-Type': 'multipart/form-data',
+                'Authorization': this.token
             },
             body: formData
         })
@@ -234,6 +236,8 @@ const LocalRecordingManager: ILocalRecordingManager = {
         this.selfRecording.on = onlySelf;
         this.recordingData = [];
         this.roomName = getRoomName(getState()) ?? '';
+        console.log(getState(), '34534534534534534')
+        this.token = getState()['features/base/settings'].token ?? '';
         let gdmStream: MediaStream = new MediaStream();
         const tracks = getTrackState(getState());
 
