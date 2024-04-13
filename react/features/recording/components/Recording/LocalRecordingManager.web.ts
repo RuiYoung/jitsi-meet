@@ -151,7 +151,7 @@ const LocalRecordingManager: ILocalRecordingManager = {
      */
     uploadRecordFile(file: Blob) {
         let formData = new FormData();
-        formData.append('MeetingId', this.roomName);
+        formData.append('MeetingNo', this.roomName);
         formData.append('ImageFile', file);
         fetch('/cs/web/recordFile/upload/files/single', {
             method: 'POST',
