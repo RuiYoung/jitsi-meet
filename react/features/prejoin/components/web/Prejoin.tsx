@@ -237,7 +237,16 @@ const Prejoin = ({
     const dispatch = useDispatch();
     const [password, setPassword] = useState('');
     useEffect(() => {
-        getMeetingConfigInfo(room)
+        if (!params.token && !localStorage.getItem('token')) {
+            gotoLogin()
+        } else {
+            if (params.token) {
+                localStorage.setItem('token', params.token as string)
+                localStorage.setItem('userId', params.userId as string)
+            }
+            getMeetingConfigInfo(room)
+        }
+
     }, [])
     interface Iparams {
         userId?: string;
@@ -255,6 +264,10 @@ const Prejoin = ({
 
         return queryParams;
     }
+    const gotoLogin = () => {
+        let transferLoginDomain = 'https://gannan-research-institute-mhbd.yymt.com/test'; // 测试环境
+        location.href = `${transferLoginDomain}/#/transferLogin?redirect=${window.location.href}&from=jistiMeet`
+    }
 
     const params: Iparams = getQueryParams();
     /**
@@ -268,12 +281,13 @@ const Prejoin = ({
     const getMeetingConfigInfo = async (roomName?: String) => {
         const queryInfo = {
             meetId: roomName,
-            userId: params.userId
+            userId: params.userId || localStorage.getItem('userId')
         }
         fetch('auth/meeting/userMeetPreConfig', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': (params.token || localStorage.getItem('token')) as string
             },
             body: JSON.stringify(queryInfo)
         })
@@ -313,6 +327,12 @@ const Prejoin = ({
                     }
                     setName(res.data.nickName)
                 } else {
+                    if ([104, 1001, 1003, 1004].includes(res.code)) {
+                        // token失效，重新登录
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('userId')
+                        gotoLogin()
+                    }
                     setName('')
                     dispatch(showNotification({
                         appearance: NOTIFICATION_TYPE.ERROR,
