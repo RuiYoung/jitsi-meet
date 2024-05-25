@@ -245,6 +245,10 @@ function getDevServerConfig() {
                 target: 'http://10.60.0.68:7002',
                 secure: false,
             },
+            '/xmpp-websocket': {
+                target: 'https://meet-platform.yymt.com',
+                secure: false,
+            },
             '/cs/web/': {
                 target: 'http://10.60.0.67:8001',
                 secure: false,

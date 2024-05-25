@@ -275,6 +275,27 @@ const Prejoin = ({
     */
     const [showPsdDialog, setShowPsdDialog] = useState(false);
     /**
+     * 判断主持人是否入会
+     */
+    const getModeratorHasMeeting = () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const response = await fetch('xmpp-websocket/lyh');
+                if (!response.ok) {
+                    reject('请求失败')
+                    throw new Error('Network response was not ok');
+                }
+                // 处理返回的数据
+                const res: any = await response.json();
+                resolve(res)
+                console.log(res);
+            } catch (error) {
+                reject('请求失败')
+                console.error('There was a problem with your fetch operation:', error);
+            }
+        })
+    }
+    /**
      * 获取会议配置信息
      * @param roomName
      */
@@ -297,24 +318,51 @@ const Prejoin = ({
                 }
                 return response.json();
             })
-            .then(res => {
+            .then(async (res) => {
                 if (res.code === 0) {
                     dispatchUpdateSettings({
                         meetTopic: res.data.meetTopic,
                         startWithAudioMuted: res.data.isMutedAudio,
                         startWithVideoMuted: res.data.isMutedVideo,
-                        userId: params.userId,
-                        token: params.token,
+                        userId: params.userId || localStorage.getItem('userId'),
+                        token: params.token || localStorage.getItem('token'),
                     })
                     if (res.data.isModerator === 0 && res.data.hostJoinedMeetingBeforeEnable === 1) {
-                        // 非主持人且设置为需主持人先入会的情况下，默认等待提示，暂不入会
-                        dispatch(showNotification({
-                            appearance: NOTIFICATION_TYPE.ERROR,
-                            titleKey: '123343',
-                            title: '警告',
-                            descriptionKey: '主持人未入会，请稍后重试',
-                            uid: LOCAL_RECORDING_NOTIFICATION_ID
-                        }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+                        // 非主持人且设置为需主持人先入会的情况下
+                        getModeratorHasMeeting().then((moderatorRes: any) => {
+                            let roomStr = String(room);
+                            const regex = new RegExp(`\\b${roomStr}\\b`);
+                            if (moderatorRes && !regex.test(moderatorRes)) {
+                                // 已开启会议中不含目前会议，暂不入会
+                                dispatch(showNotification({
+                                    appearance: NOTIFICATION_TYPE.ERROR,
+                                    titleKey: '123343',
+                                    title: '警告',
+                                    descriptionKey: '主持人未入会，请稍后重试',
+                                    uid: LOCAL_RECORDING_NOTIFICATION_ID
+                                }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+
+                            } else {
+                                setPassword(res.data.password)
+                                if (res.data.password) {
+                                    // 校验入会密码
+                                    setShowPsdDialog(true)
+                                } else {
+                                    // 没有入会密码，直接入会
+                                    onJoinButtonClick()
+                                }
+                            }
+                        }).catch(err => {
+                            dispatch(showNotification({
+                                appearance: NOTIFICATION_TYPE.ERROR,
+                                titleKey: '123343',
+                                title: '警告',
+                                descriptionKey: '请求失败',
+                                uid: LOCAL_RECORDING_NOTIFICATION_ID
+                            }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+                        });
+
+
                     } else {
                         setPassword(res.data.password)
                         if (res.data.password) {
