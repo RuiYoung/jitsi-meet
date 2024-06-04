@@ -266,7 +266,7 @@ const Prejoin = ({
     }
     const gotoLogin = () => {
         let transferLoginDomain = 'https://gannan-research-institute-mhbd.yymt.com/test'; // 测试环境
-        location.href = `${transferLoginDomain}/#/transferLogin?redirect=${window.location.href}&from=jistiMeet`
+        location.href = `${transferLoginDomain}/#/transferLogin?redirect=${window.location.origin}/${room}&from=jistiMeet`
     }
 
     const params: Iparams = getQueryParams();
@@ -281,6 +281,27 @@ const Prejoin = ({
         return new Promise(async (resolve, reject) => {
             try {
                 const response = await fetch('xmpp-websocket/lyh');
+                if (!response.ok) {
+                    reject('请求失败')
+                    throw new Error('Network response was not ok');
+                }
+                // 处理返回的数据
+                const res: any = await response.json();
+                resolve(res)
+                console.log(res);
+            } catch (error) {
+                reject('请求失败')
+                console.error('There was a problem with your fetch operation:', error);
+            }
+        })
+    }
+    /**
+     * 判断是否重复入会
+     */
+    const getTokenHasMeeting = () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const response = await fetch('xmpp-websocket/lyh2');
                 if (!response.ok) {
                     reject('请求失败')
                     throw new Error('Network response was not ok');
@@ -332,17 +353,7 @@ const Prejoin = ({
                         getModeratorHasMeeting().then((moderatorRes: any) => {
                             let roomStr = String(room);
                             const regex = new RegExp(`\\b${roomStr}\\b`);
-                            if (moderatorRes && !regex.test(moderatorRes)) {
-                                // 已开启会议中不含目前会议，暂不入会
-                                dispatch(showNotification({
-                                    appearance: NOTIFICATION_TYPE.ERROR,
-                                    titleKey: '123343',
-                                    title: '警告',
-                                    descriptionKey: '主持人未入会，请稍后重试',
-                                    uid: LOCAL_RECORDING_NOTIFICATION_ID
-                                }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
-
-                            } else {
+                            if (moderatorRes && regex.test(moderatorRes)) {
                                 setPassword(res.data.password)
                                 if (res.data.password) {
                                     // 校验入会密码
@@ -351,6 +362,15 @@ const Prejoin = ({
                                     // 没有入会密码，直接入会
                                     onJoinButtonClick()
                                 }
+                            } else {
+                                // 已开启会议中不含目前会议，暂不入会
+                                dispatch(showNotification({
+                                    appearance: NOTIFICATION_TYPE.ERROR,
+                                    titleKey: '123343',
+                                    title: '警告',
+                                    descriptionKey: '主持人未入会，请稍后重试',
+                                    uid: LOCAL_RECORDING_NOTIFICATION_ID
+                                }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
                             }
                         }).catch(err => {
                             dispatch(showNotification({
@@ -364,14 +384,29 @@ const Prejoin = ({
 
 
                     } else {
-                        setPassword(res.data.password)
-                        if (res.data.password) {
-                            // 校验入会密码
-                            setShowPsdDialog(true)
-                        } else {
-                            // 没有入会密码，直接入会
-                            onJoinButtonClick()
-                        }
+                        // 检测是否重复入会
+                        getTokenHasMeeting().then((tokenRes: any) => {
+                            const currentToken = params.token || localStorage.getItem('token');
+                            if (tokenRes && tokenRes.includes(currentToken)) {
+                                dispatch(showNotification({
+                                    appearance: NOTIFICATION_TYPE.ERROR,
+                                    titleKey: '123343',
+                                    title: '警告',
+                                    descriptionKey: '该用户已入会，无需重复入会',
+                                    uid: LOCAL_RECORDING_NOTIFICATION_ID
+                                }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+                            } else {
+                                setPassword(res.data.password)
+                                if (res.data.password) {
+                                    // 校验入会密码
+                                    setShowPsdDialog(true)
+                                } else {
+                                    // 没有入会密码，直接入会
+                                    onJoinButtonClick()
+                                }
+                            }
+                        })
+
                     }
                     setName(res.data.nickName)
                 } else {

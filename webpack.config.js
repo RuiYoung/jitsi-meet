@@ -242,11 +242,11 @@ function getDevServerConfig() {
         hot: true,
         proxy: {
             '/auth/meeting': {
-                target: 'http://10.60.0.68:7002',
+                target: 'http://10.60.0.67:8001',
                 secure: false,
             },
             '/xmpp-websocket': {
-                target: 'https://meet-platform.yymt.com',
+                target: 'https://10.60.0.67:8443',
                 secure: false,
             },
             '/cs/web/': {
